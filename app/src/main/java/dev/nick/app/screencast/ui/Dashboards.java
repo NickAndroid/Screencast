@@ -16,6 +16,7 @@ public class Dashboards extends DashboardFragment implements TileListener {
         super.onCreateDashCategories(categories);
         Category category = new Category();
         category.addTile(new WithAudioTile(getContext(), this));
+        category.addTile(new WithCameraTile(getContext(), this));
         category.addTile(new ResolutionsDropdownTile(getContext(), this));
         categories.add(category);
     }

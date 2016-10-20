@@ -46,6 +46,7 @@ import java.util.List;
 
 import dev.nick.app.screencast.Assert;
 import dev.nick.app.screencast.Factory;
+import dev.nick.logger.LoggerManager;
 
 /**
  * Class which manages interactions with the camera, but does not do any UI.  This class is
@@ -677,7 +678,7 @@ class CameraManager implements FocusOverlayManager.Listener {
 
             final Camera.Parameters params = mCamera.getParameters();
             final Camera.Size pictureSize = chooseBestPictureSize();
-            final Camera.Size previewSize = chooseBestPreviewSize(pictureSize);
+            final Camera.Size previewSize = chooseBestPreviewSize();
             params.setPreviewSize(previewSize.width, previewSize.height);
             params.setPictureSize(pictureSize.width, pictureSize.height);
             logCameraSize("Setting preview size: ", previewSize);
@@ -867,7 +868,7 @@ class CameraManager implements FocusOverlayManager.Listener {
     }
 
     /**
-     * Returns the scale factor to scale the width/height to max allowed in MmsConfig
+     * Returns the scale factor to scale the width/height to max allowed in Config
      */
     private float getScaleFactorForMaxAllowedSize(final int width, final int height,
                                                   final int maxWidth, final int maxHeight) {
@@ -916,8 +917,8 @@ class CameraManager implements FocusOverlayManager.Listener {
             screenHeight = displayMetrics.widthPixels;
         }
 
-        final int maxWidth = screenWidth;
-        final int maxHeight = screenHeight;
+        final int maxWidth = screenWidth / 3;
+        final int maxHeight = screenHeight / 3;
 
         // Constrain the size within the max width/height defined by MmsConfig.
         final float scaleFactor = getScaleFactorForMaxAllowedSize(screenWidth, screenHeight,
@@ -925,7 +926,7 @@ class CameraManager implements FocusOverlayManager.Listener {
         screenWidth *= scaleFactor;
         screenHeight *= scaleFactor;
 
-        final float aspectRatio = 1;//FIXME
+        final float aspectRatio = 0.5f;//FIXME
         final List<Camera.Size> sizes = new ArrayList<Camera.Size>(
                 mCamera.getParameters().getSupportedPictureSizes());
         final int maxPixels = maxWidth * maxHeight;
@@ -940,17 +941,10 @@ class CameraManager implements FocusOverlayManager.Listener {
      * Chose the best preview size based on the picture size.  Try to find a size with the same
      * aspect ratio and size as the picture if possible
      */
-    private Camera.Size chooseBestPreviewSize(final Camera.Size pictureSize) {
-        final List<Camera.Size> sizes = new ArrayList<Camera.Size>(
+    private Camera.Size chooseBestPreviewSize() {
+        final List<Camera.Size> sizes = new ArrayList<>(
                 mCamera.getParameters().getSupportedPreviewSizes());
-        final float aspectRatio = pictureSize.width / (float) pictureSize.height;
-        final int capturePixels = pictureSize.width * pictureSize.height;
-
-        // Sort the sizes so the best size is first
-        Collections.sort(sizes, new SizeComparator(Integer.MAX_VALUE, Integer.MAX_VALUE,
-                aspectRatio, capturePixels));
-
-        return sizes.get(0);
+        return sizes.get(sizes.size() - 1);
     }
 
     @Override // From FocusOverlayManager.Listener

@@ -28,4 +28,5 @@ dependencies {
     apt 'com.github.hotchemi:permissionsdispatcher-processor:2.2.0'
     compile 'dev.nick:tiles:0.1'
     compile 'com.github.NickAndroid:Logger_Android:2.0'
+    compile 'com.android.support:design:24.1.0'
 }

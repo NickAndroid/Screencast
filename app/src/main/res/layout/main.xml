@@ -8,12 +8,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/hint"
-        style="@style/textStyle"
-        android:paddingBottom="8dp"
-        android:text="@string/start_description" />
-
     <FrameLayout
         style="@style/floating_action_button"
         android:background="@drawable/fab_accent">
@@ -24,18 +18,4 @@
             android:background="@drawable/floating_action_button"
             android:src="@drawable/record" />
     </FrameLayout>
-
-    <CheckBox
-        android:id="@+id/with_audio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/with_audio" />
-
-    <TextView
-        android:id="@+id/audio_warning"
-        style="@style/textStyle"
-        android:background="?android:attr/selectableItemBackground"
-        android:clickable="true"
-        android:paddingTop="8dp"
-        android:text="@string/no_audio_setting_warning" />
 </LinearLayout>

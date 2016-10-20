@@ -22,7 +22,6 @@ import android.hardware.Camera;
 import android.view.View;
 import android.view.View.MeasureSpec;
 
-
 import java.io.IOException;
 
 import dev.nick.app.screencast.Assert;
@@ -33,18 +32,9 @@ import dev.nick.app.screencast.Assert;
  * helper class.  Specifics for each implementation are in CameraPreviewHost
  */
 public class CameraPreview {
-    public interface CameraPreviewHost {
-        View getView();
-        boolean isValid();
-        void startPreview(final Camera camera) throws IOException;
-        void onCameraPermissionGranted();
-
-    }
-
+    private final CameraPreviewHost mHost;
     private int mCameraWidth = -1;
     private int mCameraHeight = -1;
-
-    private final CameraPreviewHost mHost;
 
     public CameraPreview(final CameraPreviewHost host) {
         Assert.notNull(host);
@@ -146,9 +136,21 @@ public class CameraPreview {
     /**
      * Starts the camera preview on the current surface.  Abstracts out the differences in API
      * from the CameraManager
+     *
      * @throws IOException Which is caught by the CameraManager to display an error
      */
     public void startPreview(final Camera camera) throws IOException {
         mHost.startPreview(camera);
+    }
+
+    public interface CameraPreviewHost {
+        View getView();
+
+        boolean isValid();
+
+        void startPreview(final Camera camera) throws IOException;
+
+        void onCameraPermissionGranted();
+
     }
 }

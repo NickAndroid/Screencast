@@ -24,23 +24,22 @@
                 <action android:name="org.cyanogenmod.server.display.SCAN" />
             </intent-filter>
         </service>
-
         <service android:name=".ui.window.FloatWindowService" />
 
         <activity
             android:name=".ui.SettingsActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".ui.MainActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTask">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask" />
 
         <receiver
             android:name=".ScreencastStartReceiver"
@@ -56,6 +55,7 @@
                 <action android:name="org.cyanogenmod.SHOW_TOUCHES" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

@@ -35,14 +35,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import dev.nick.app.screencast.IScreencaster;
 import dev.nick.app.screencast.R;
 import dev.nick.app.screencast.ScreencastService;
+import dev.nick.app.screencast.provider.SettingsProvider;
 import dev.nick.app.screencast.ui.window.FloatWindowService;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnPermissionDenied;
@@ -57,9 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
     private IScreencaster mCaster;
     private ImageButton mScreencastButton;
-    private TextView mText;
-    private TextView mAudioText;
-    private CheckBox mChkWithAudio;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -67,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
             mCaster = (IScreencaster) iBinder;
             mScreencastButton.setEnabled(true);
             refreshState();
-            MainActivityPermissionsDispatcher.startPreviewWithCheck(MainActivity.this);
+            if (SettingsProvider.get().withCamera())
+                MainActivityPermissionsDispatcher.startPreviewWithCheck(MainActivity.this);
         }
 
         @Override
@@ -87,9 +84,6 @@ public class MainActivity extends AppCompatActivity {
                 (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
         mScreencastButton = (ImageButton) findViewById(R.id.screencast);
-        mText = (TextView) findViewById(R.id.hint);
-        mAudioText = (TextView) findViewById(R.id.audio_warning);
-        mChkWithAudio = (CheckBox) findViewById(R.id.with_audio);
         mScreencastButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         mCaster.setProjection(mMediaProjection);
-        mCaster.start(mChkWithAudio.isChecked());
+        mCaster.start(SettingsProvider.get().withAudio());
         finish();
     }
 
@@ -174,8 +168,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnPermissionDenied(Manifest.permission.RECORD_AUDIO)
     void onNoAudioPermission() {
-        mChkWithAudio.setChecked(false);
-        mChkWithAudio.setEnabled(false);
     }
 
     private void refreshState() {
@@ -184,17 +176,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "refreshState, recording=" + recording);
         if (recording) {
             mScreencastButton.setImageResource(R.drawable.stop);
-            mText.setText(R.string.stop_description);
-            mAudioText.setVisibility(View.GONE);
-            mChkWithAudio.setVisibility(View.GONE);
         } else {
             mScreencastButton.setImageResource(R.drawable.record);
-            mText.setText(R.string.start_description);
-
-            mChkWithAudio.setChecked(true);
-            mChkWithAudio.setVisibility(View.VISIBLE);
-            mChkWithAudio.setOnCheckedChangeListener(null);
-            mAudioText.setVisibility(View.GONE);
         }
     }
 
