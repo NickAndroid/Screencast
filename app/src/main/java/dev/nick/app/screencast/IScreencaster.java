@@ -3,8 +3,19 @@ package dev.nick.app.screencast;
 import android.media.projection.MediaProjection;
 
 public interface IScreencaster {
-    boolean start(boolean withAudio);
+    boolean start(MediaProjection projection, boolean withAudio);
+
     void stop();
+
     boolean isCasting();
-    void setProjection(MediaProjection projection);
+
+    void watch(ICastWatcher watcher);
+
+    void unWatch(ICastWatcher watcher);
+
+    interface ICastWatcher {
+        void onStartCasting();
+
+        void onStopCasting();
+    }
 }

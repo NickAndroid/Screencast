@@ -22,6 +22,13 @@ public class ResolutionsDropdownTile extends HeadlessTile {
             protected List<String> onCreateDropDownList() {
                 return ValidResolutions.string();
             }
+
+            @Override
+            public void onDropdownItemSelected(int position, boolean fromSpinner) {
+                super.onDropdownItemSelected(position, fromSpinner);
+                getStatusTextView().setText(ValidResolutions.string().get(position));
+            }
         };
+
     }
 }

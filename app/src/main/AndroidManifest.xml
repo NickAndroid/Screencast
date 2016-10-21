@@ -24,22 +24,18 @@
                 <action android:name="org.cyanogenmod.server.display.SCAN" />
             </intent-filter>
         </service>
-        <service android:name=".ui.window.FloatWindowService" />
+        <service android:name=".camera.CameraPreviewService" />
 
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".ui.ScreenCastActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.MainActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTask" />
 
         <receiver
             android:name=".ScreencastStartReceiver"

@@ -17,12 +17,23 @@
 package dev.nick.app.screencast.camera;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 
 public class ThreadUtil {
     private static final Handler sHandler = new Handler(Looper.getMainLooper());
+    private static Handler sWorkThreadHandler;
 
     public static Handler getMainThreadHandler() {
         return sHandler;
+    }
+
+    public synchronized static Handler getWorkThreadHandler() {
+        if (sWorkThreadHandler == null) {
+            HandlerThread ht = new HandlerThread("worker.thread.handler");
+            ht.start();
+            sWorkThreadHandler = new Handler(ht.getLooper());
+        }
+        return sWorkThreadHandler;
     }
 }

@@ -7,10 +7,12 @@ import dev.nick.app.screencast.R;
 import dev.nick.tiles.tile.EditTextTileView;
 import dev.nick.tiles.tile.TileListener;
 
-public class EditTextTile extends HeadlessTile {
-    public EditTextTile(@NonNull Context context, TileListener listener) {
+public class LimitSizeTile extends HeadlessTile {
+    public LimitSizeTile(@NonNull Context context, TileListener listener) {
         super(context, listener);
-        this.iconRes = R.drawable.ic_share;
+        this.iconRes = R.drawable.ic_storage_black_24dp;
+        this.title = "Storage limit";
+        this.summary = "No limit";
         this.tileView = new EditTextTileView(context) {
             @Override
             protected void onPositiveButtonClick() {

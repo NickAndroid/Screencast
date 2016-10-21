@@ -70,6 +70,10 @@ public abstract class ServiceProxy {
         return this;
     }
 
+    protected boolean setTask(ProxyTask task) throws IllegalStateException {
+        return setTask(task, "NO-NAME");
+    }
+
     protected boolean setTask(ProxyTask task, String name) throws IllegalStateException {
         if (mTaskSet) {
             throw new IllegalStateException("Cannot call setTask twice on the same ServiceProxy.");
@@ -97,7 +101,7 @@ public abstract class ServiceProxy {
          * the duration).
          */
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            throw new IllegalStateException("This cannot be called on the main thread.");
+            LoggerManager.getLogger(getClass()).warn("This cannot be called on the main thread.");
         }
 
         synchronized (mConnection) {

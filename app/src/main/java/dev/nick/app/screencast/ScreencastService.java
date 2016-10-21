@@ -43,6 +43,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -51,7 +53,7 @@ public class ScreencastService extends Service implements IScreencaster {
     public static final String SCREENCASTER_NAME = "hidden:screen-recording";
     private static final String LOGTAG = "ScreencastService";
     private static final String ACTION_STOP_SCREENCAST = "org.cyanogenmod.ACTION_STOP_SCREENCAST";
-
+    private final List<ICastWatcher> mWatchers = new ArrayList<>();
     RecordingDevice mRecorder;
     boolean mIsCasting;
     ServiceBinder mBinder;
@@ -59,7 +61,6 @@ public class ScreencastService extends Service implements IScreencaster {
     private long startTime;
     private Timer timer;
     private Notification.Builder mBuilder;
-
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -169,6 +170,7 @@ public class ScreencastService extends Service implements IScreencaster {
             Toast.makeText(this, R.string.insufficient_storage, Toast.LENGTH_LONG).show();
         }
         mIsCasting = false;
+        notifyUncasting();
     }
 
     @Override
@@ -228,14 +230,16 @@ public class ScreencastService extends Service implements IScreencaster {
     }
 
     @Override
-    public boolean start(boolean withAudio) {
+    public boolean start(MediaProjection projection, boolean withAudio) {
         Log.d(LOGTAG, "start");
+        mProjection = projection;
         try {
             if (!hasAvailableSpace()) {
                 Toast.makeText(this, R.string.not_enough_storage, Toast.LENGTH_LONG).show();
                 return false;
             }
             mIsCasting = true;
+            notifyCasting();
             startTime = SystemClock.elapsedRealtime();
             registerScreencaster(withAudio);
             mBuilder = createNotificationBuilder();
@@ -265,16 +269,52 @@ public class ScreencastService extends Service implements IScreencaster {
         return mIsCasting;
     }
 
+    private void notifyCasting() {
+        synchronized (mWatchers) {
+            for (ICastWatcher w : mWatchers) {
+                w.onStartCasting();
+            }
+        }
+    }
+
+    private void notifyUncasting() {
+        synchronized (mWatchers) {
+            for (ICastWatcher w : mWatchers) {
+                w.onStopCasting();
+            }
+        }
+    }
+
     @Override
-    public void setProjection(MediaProjection projection) {
-        mProjection = projection;
+    public void watch(ICastWatcher watcher) {
+        synchronized (mWatchers) {
+            if (!mWatchers.contains(watcher)) {
+                mWatchers.add(watcher);
+                notifySticky(watcher);
+            }
+        }
+    }
+
+    @Override
+    public void unWatch(ICastWatcher watcher) {
+        synchronized (mWatchers) {
+            mWatchers.remove(watcher);
+        }
+    }
+
+    void notifySticky(ICastWatcher watcher) {
+        if (mIsCasting) {
+            watcher.onStartCasting();
+        } else {
+            watcher.onStopCasting();
+        }
     }
 
     class ServiceBinder extends Binder implements IScreencaster {
 
         @Override
-        public boolean start(boolean withAudio) {
-            return ScreencastService.this.start(withAudio);
+        public boolean start(MediaProjection projection, boolean withAudio) {
+            return ScreencastService.this.start(projection, withAudio);
         }
 
         @Override
@@ -288,8 +328,13 @@ public class ScreencastService extends Service implements IScreencaster {
         }
 
         @Override
-        public void setProjection(MediaProjection projection) {
-            ScreencastService.this.setProjection(projection);
+        public void watch(ICastWatcher watcher) {
+            ScreencastService.this.watch(watcher);
+        }
+
+        @Override
+        public void unWatch(ICastWatcher watcher) {
+            ScreencastService.this.unWatch(watcher);
         }
     }
 }

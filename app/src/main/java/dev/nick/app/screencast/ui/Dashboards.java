@@ -17,6 +17,7 @@ public class Dashboards extends DashboardFragment implements TileListener {
         Category category = new Category();
         category.addTile(new WithAudioTile(getContext(), this));
         category.addTile(new WithCameraTile(getContext(), this));
+        category.addTile(new PreviewSizeDropdownTile(getContext(), this));
         category.addTile(new ResolutionsDropdownTile(getContext(), this));
         categories.add(category);
     }
@@ -26,4 +27,3 @@ public class Dashboards extends DashboardFragment implements TileListener {
         // Nothing.
     }
 }
-

@@ -1,8 +1,9 @@
-package dev.nick.app.screencast.ui.window;
+package dev.nick.app.screencast.camera;
 
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.os.Binder;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,15 +15,19 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.LinearLayout;
 
 import dev.nick.app.screencast.R;
-import dev.nick.app.screencast.camera.SoftwareCameraPreview;
 import dev.nick.logger.LoggerManager;
 
-public class FloatWindowService extends Service {
+public class CameraPreviewService extends Service {
 
     private View mFloatView;
     private WindowManager windowManager;
     private LayoutParams mFloatContainerParams;
     private ViewGroup mFloatViewContainer;
+
+    private WindowSize mSize;
+
+    private ServiceBinder mBinder;
+
     private OnTouchListener mFloatViewTouchListener = new OnTouchListener() {
 
         private int initialX;
@@ -62,20 +67,25 @@ public class FloatWindowService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        if (mBinder == null) mBinder = new ServiceBinder();
+        return mBinder;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mSize = new WindowSize(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+    }
+
+    public void showPreview() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (mFloatView != null) {
             windowManager.removeView(mFloatView);
         }
         mFloatView = new SoftwareCameraPreview(this);
         mFloatContainerParams = new LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT,
+                mSize.w,
+                mSize.h,
                 LayoutParams.TYPE_TOAST,
                 LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
@@ -89,11 +99,45 @@ public class FloatWindowService extends Service {
         mFloatViewContainer.addView(mFloatView);
     }
 
+    private void hidePreview() {
+
+    }
+
+    public void setSize(WindowSize size) {
+        this.mSize = size;
+        mFloatContainerParams.width = size.w;
+        mFloatContainerParams.height = size.h;
+        windowManager.updateViewLayout(mFloatViewContainer,
+                mFloatContainerParams);
+    }
+
     @Override
     public void onDestroy() {
         if (mFloatView != null) {
             windowManager.removeView(mFloatView);
         }
         super.onDestroy();
+    }
+
+    public static class WindowSize {
+        int w, h;
+
+        public WindowSize(int w, int h) {
+            this.w = w;
+            this.h = h;
+        }
+    }
+
+    class ServiceBinder extends Binder implements ICameraPreviewService {
+
+        @Override
+        public void show() {
+            CameraPreviewService.this.showPreview();
+        }
+
+        @Override
+        public void hide() {
+            CameraPreviewService.this.hidePreview();
+        }
     }
 }

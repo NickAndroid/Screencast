@@ -46,7 +46,6 @@ import java.util.List;
 
 import dev.nick.app.screencast.Assert;
 import dev.nick.app.screencast.Factory;
-import dev.nick.logger.LoggerManager;
 
 /**
  * Class which manages interactions with the camera, but does not do any UI.  This class is
@@ -63,7 +62,7 @@ import dev.nick.logger.LoggerManager;
  * This class is not thread safe.  It should only be called from one thread (the UI thread or test
  * thread)
  */
-class CameraManager implements FocusOverlayManager.Listener {
+public class CameraManager implements FocusOverlayManager.Listener {
     // Error codes
     static final int ERROR_OPENING_CAMERA = 1;
     static final int ERROR_SHOWING_PREVIEW = 2;
@@ -209,7 +208,7 @@ class CameraManager implements FocusOverlayManager.Listener {
     /**
      * Gets the singleton instance
      */
-    static CameraManager get() {
+    public static CameraManager get() {
         if (sInstance == null) {
             sInstance = new CameraManager();
         }
