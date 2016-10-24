@@ -25,6 +25,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -59,7 +61,6 @@ public class ScreenCastActivity extends TransactionSafeActivity {
         setContentView(R.layout.navigator_content);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        placeFragment(R.id.container, new Dashboards(), null, false);
 
         mFab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -68,8 +69,12 @@ public class ScreenCastActivity extends TransactionSafeActivity {
             public void onClick(View view) {
                 if (mIsCasting) {
                     stopRecording();
+                    CameraPreviewServiceProxy.hide(getApplicationContext());
                 } else {
                     ScreenCastActivityPermissionsDispatcher.startRecordingWithCheck(ScreenCastActivity.this);
+                    if (SettingsProvider.get().withCamera()) {
+                        ScreenCastActivityPermissionsDispatcher.showCameraPreviewWithCheck(ScreenCastActivity.this);
+                    }
                 }
             }
         });
@@ -82,10 +87,6 @@ public class ScreenCastActivity extends TransactionSafeActivity {
             @Override
             public void onStartCasting() {
                 refreshState(true);
-                if (SettingsProvider.get().withCamera()) {
-                    CameraPreviewServiceProxy.show(getApplicationContext());
-                }
-                finish();
             }
 
             @Override
@@ -93,6 +94,11 @@ public class ScreenCastActivity extends TransactionSafeActivity {
                 refreshState(false);
             }
         });
+    }
+
+    @NeedsPermission(Manifest.permission.CAMERA)
+    void showCameraPreview() {
+        CameraPreviewServiceProxy.show(getApplicationContext(), SettingsProvider.get().previewSize());
     }
 
     @NeedsPermission({Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE})
@@ -150,6 +156,22 @@ public class ScreenCastActivity extends TransactionSafeActivity {
     @OnPermissionDenied(Manifest.permission.RECORD_AUDIO)
     void onNoAudioPermission() {
         SettingsProvider.get().setWithAudio(false);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void refreshState(final boolean isCasting) {

@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.LinearLayout;
@@ -20,9 +19,9 @@ import dev.nick.logger.LoggerManager;
 public class CameraPreviewService extends Service {
 
     private View mFloatView;
-    private WindowManager windowManager;
+    private WindowManager mWindowManager;
     private LayoutParams mFloatContainerParams;
-    private ViewGroup mFloatViewContainer;
+    private AudioFadeLayout mFloatViewContainer;
 
     private WindowSize mSize;
 
@@ -37,19 +36,19 @@ public class CameraPreviewService extends Service {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    LoggerManager.getLogger(getClass()).debug("ACTION_DOWN");
                     initialX = mFloatContainerParams.x;
                     initialY = mFloatContainerParams.y;
                     initialTouchX = event.getRawX();
                     initialTouchY = event.getRawY();
-
+                    mFloatViewContainer.stopFading();
                     return true;
                 case MotionEvent.ACTION_UP:
-                    LoggerManager.getLogger(getClass()).debug("ACTION_UP");
-                    windowManager.updateViewLayout(mFloatViewContainer,
+                    mWindowManager.updateViewLayout(mFloatViewContainer,
                             mFloatContainerParams);
+                    mFloatViewContainer.startFading(5000);
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     LoggerManager.getLogger(getClass()).debug("ACTION_MOVE");
@@ -57,7 +56,7 @@ public class CameraPreviewService extends Service {
                     int diffY = (int) (event.getRawY() - initialTouchY);
                     mFloatContainerParams.x = initialX + diffX;
                     mFloatContainerParams.y = initialY + diffY;
-                    windowManager.updateViewLayout(mFloatViewContainer,
+                    mWindowManager.updateViewLayout(mFloatViewContainer,
                             mFloatContainerParams);
                     return true;
             }
@@ -71,17 +70,12 @@ public class CameraPreviewService extends Service {
         return mBinder;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mSize = new WindowSize(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-    }
-
-    public void showPreview() {
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (mFloatView != null) {
-            windowManager.removeView(mFloatView);
+    public void showPreview(WindowSize size) {
+        if (isShowing()) {
+            return;
         }
+        mSize = size;
+        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mFloatView = new SoftwareCameraPreview(this);
         mFloatContainerParams = new LayoutParams(
                 mSize.w,
@@ -91,53 +85,114 @@ public class CameraPreviewService extends Service {
                 PixelFormat.TRANSLUCENT);
         mFloatContainerParams.y = 0;
         mFloatContainerParams.x = 0;
-        mFloatViewContainer = (ViewGroup) LayoutInflater.from(this).inflate(R.layout.float_containor, null);
+        mFloatViewContainer = (AudioFadeLayout) LayoutInflater.from(this).inflate(R.layout.float_containor, null);
         mFloatViewContainer.setOnTouchListener(mFloatViewTouchListener);
         mFloatViewContainer.setLayoutParams(new LinearLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        windowManager.addView(mFloatViewContainer, mFloatContainerParams);
+        mWindowManager.addView(mFloatViewContainer, mFloatContainerParams);
         mFloatViewContainer.addView(mFloatView);
+        mFloatViewContainer.startFading(5000);
+        LoggerManager.getLogger(getClass()).debug("Showing @size:" + mSize);
     }
 
     private void hidePreview() {
+        if (isShowing()) {
+            mWindowManager.removeView(mFloatViewContainer);
+        }
+    }
 
+    private boolean isShowing() {
+        return mFloatViewContainer != null && mFloatViewContainer.isAttachedToWindow() && mFloatView.isAttachedToWindow();
     }
 
     public void setSize(WindowSize size) {
         this.mSize = size;
-        mFloatContainerParams.width = size.w;
-        mFloatContainerParams.height = size.h;
-        windowManager.updateViewLayout(mFloatViewContainer,
-                mFloatContainerParams);
+        if (isShowing()) {
+            mFloatContainerParams.width = size.w;
+            mFloatContainerParams.height = size.h;
+            mWindowManager.updateViewLayout(mFloatViewContainer,
+                    mFloatContainerParams);
+        }
     }
 
     @Override
     public void onDestroy() {
         if (mFloatView != null) {
-            windowManager.removeView(mFloatView);
+            mWindowManager.removeView(mFloatView);
         }
         super.onDestroy();
     }
 
     public static class WindowSize {
+
+        static WindowSize DEFAULT = new WindowSize(320, 480);
+        static WindowSize LARGE = new WindowSize(480, 720);
+        static WindowSize SMALL = new WindowSize(240, 360);
+
         int w, h;
 
         public WindowSize(int w, int h) {
             this.w = w;
             this.h = h;
         }
+
+        @Override
+        public String toString() {
+            return "WindowSize{" +
+                    "w=" + w +
+                    ", h=" + h +
+                    '}';
+        }
     }
 
     class ServiceBinder extends Binder implements ICameraPreviewService {
 
         @Override
-        public void show() {
-            CameraPreviewService.this.showPreview();
+        public void show(int sizeIndex) {
+            WindowSize size;
+            switch (sizeIndex) {
+                case PreviewSize.LARGE:
+                    size = WindowSize.LARGE;
+                    break;
+                case PreviewSize.SMALL:
+                    size = WindowSize.SMALL;
+                    break;
+                case PreviewSize.NORMAL:
+                    size = WindowSize.DEFAULT;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Bad size index:" + sizeIndex);
+            }
+            CameraPreviewService.this.showPreview(size);
         }
 
         @Override
         public void hide() {
             CameraPreviewService.this.hidePreview();
+        }
+
+        @Override
+        public boolean isShowing() {
+            return CameraPreviewService.this.isShowing();
+        }
+
+        @Override
+        public void setSize(int sizeIndex) {
+            WindowSize size;
+            switch (sizeIndex) {
+                case PreviewSize.LARGE:
+                    size = WindowSize.LARGE;
+                    break;
+                case PreviewSize.SMALL:
+                    size = WindowSize.SMALL;
+                    break;
+                case PreviewSize.NORMAL:
+                    size = WindowSize.DEFAULT;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Bad size index:" + sizeIndex);
+            }
+            CameraPreviewService.this.setSize(size);
         }
     }
 }

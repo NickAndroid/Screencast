@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import dev.nick.app.screencast.camera.ThreadUtil;
+
 public class ScreencastService extends Service implements IScreencaster {
 
     public static final String SCREENCASTER_NAME = "hidden:screen-recording";
@@ -271,17 +273,27 @@ public class ScreencastService extends Service implements IScreencaster {
 
     private void notifyCasting() {
         synchronized (mWatchers) {
-            for (ICastWatcher w : mWatchers) {
-                w.onStartCasting();
-            }
+            ThreadUtil.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    for (ICastWatcher w : mWatchers) {
+                        w.onStartCasting();
+                    }
+                }
+            });
         }
     }
 
     private void notifyUncasting() {
         synchronized (mWatchers) {
-            for (ICastWatcher w : mWatchers) {
-                w.onStopCasting();
-            }
+            ThreadUtil.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    for (ICastWatcher w : mWatchers) {
+                        w.onStopCasting();
+                    }
+                }
+            });
         }
     }
 
@@ -302,12 +314,17 @@ public class ScreencastService extends Service implements IScreencaster {
         }
     }
 
-    void notifySticky(ICastWatcher watcher) {
-        if (mIsCasting) {
-            watcher.onStartCasting();
-        } else {
-            watcher.onStopCasting();
-        }
+    void notifySticky(final ICastWatcher watcher) {
+        ThreadUtil.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (mIsCasting) {
+                    watcher.onStartCasting();
+                } else {
+                    watcher.onStopCasting();
+                }
+            }
+        });
     }
 
     class ServiceBinder extends Binder implements IScreencaster {

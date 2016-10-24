@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import dev.nick.app.screencast.camera.ThreadUtil;
-import dev.nick.logger.LoggerManager;
 
 public class ScreencastServiceProxy extends ServiceProxy implements IScreencaster {
 
@@ -28,7 +27,6 @@ public class ScreencastServiceProxy extends ServiceProxy implements IScreencaste
     }
 
     public static void stop(final Context context) {
-        LoggerManager.getLogger(ScreencastServiceProxy.class.getSimpleName()).trace("", new Throwable());
         ThreadUtil.getWorkThreadHandler().post(new Runnable() {
             @Override
             public void run() {

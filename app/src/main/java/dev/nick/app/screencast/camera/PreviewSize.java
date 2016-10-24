@@ -1,5 +1,7 @@
 package dev.nick.app.screencast.camera;
 
-public enum PreviewSize {
-    Large, Middle, Small;
+public interface PreviewSize {
+    int SMALL = 0;
+    int NORMAL = 1;
+    int LARGE = 2;
 }

@@ -46,6 +46,7 @@ import java.util.List;
 
 import dev.nick.app.screencast.Assert;
 import dev.nick.app.screencast.Factory;
+import dev.nick.logger.LoggerManager;
 
 /**
  * Class which manages interactions with the camera, but does not do any UI.  This class is
@@ -480,6 +481,7 @@ public class CameraManager implements FocusOverlayManager.Listener {
      * Closes the camera releasing the resources it uses
      */
     void closeCamera() {
+        LoggerManager.getLogger(getClass()).funcEnter();
         mOpenRequested = false;
         setCamera(null);
     }

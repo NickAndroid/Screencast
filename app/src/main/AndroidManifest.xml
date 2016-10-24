@@ -37,6 +37,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/title_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+
         <receiver
             android:name=".ScreencastStartReceiver"
             android:permission="android.permission.CAPTURE_SECURE_VIDEO_OUTPUT">

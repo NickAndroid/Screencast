@@ -22,15 +22,20 @@ public abstract class SettingsProvider {
 
     public abstract void setWithCamera(boolean value);
 
-    public abstract PreviewSize previewSize();
+    public abstract int previewSize();
 
-    public abstract void setPreviewSize(PreviewSize size);
+    public abstract void setPreviewSize(int size);
+
+    public abstract float resolutionScaleFactor();
+
+    public abstract void setResolutionScaleFactor(float factor);
 
     static class Impl extends SettingsProvider {
 
         private static final String KEY_WITH_AUDIO = "settings.with.audio";
         private static final String KEY_WITH_CAMERA = "settings.with.camera";
         private static final String KEY_PREVIEW_SIZE = "settings.preview.size";
+        private static final String KEY_RES_FACTOR = "settings.res.factor";
 
         @Override
         public boolean withAudio() {
@@ -57,15 +62,27 @@ public abstract class SettingsProvider {
         }
 
         @Override
-        public PreviewSize previewSize() {
-            return PreviewSize.valueOf(PreferenceManager.getDefaultSharedPreferences(Factory.get().getApplicationContext())
-                    .getString(KEY_PREVIEW_SIZE, PreviewSize.Small.name()));
+        public int previewSize() {
+            return PreferenceManager.getDefaultSharedPreferences(Factory.get().getApplicationContext())
+                    .getInt(KEY_PREVIEW_SIZE, PreviewSize.SMALL);
         }
 
         @Override
-        public void setPreviewSize(PreviewSize size) {
+        public void setPreviewSize(int size) {
             PreferenceManager.getDefaultSharedPreferences(Factory.get().getApplicationContext())
-                    .edit().putString(KEY_PREVIEW_SIZE, size.name()).apply();
+                    .edit().putInt(KEY_PREVIEW_SIZE, size).apply();
+        }
+
+        @Override
+        public float resolutionScaleFactor() {
+            return PreferenceManager.getDefaultSharedPreferences(Factory.get().getApplicationContext())
+                    .getFloat(KEY_RES_FACTOR, 1f);
+        }
+
+        @Override
+        public void setResolutionScaleFactor(float factor) {
+            PreferenceManager.getDefaultSharedPreferences(Factory.get().getApplicationContext())
+                    .edit().putFloat(KEY_RES_FACTOR, factor).apply();
         }
     }
 

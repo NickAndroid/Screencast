@@ -9,7 +9,7 @@ import dev.nick.app.screencast.provider.SettingsProvider;
 import dev.nick.tiles.tile.SwitchTileView;
 import dev.nick.tiles.tile.TileListener;
 
-public class WithAudioTile extends HeadlessTile {
+public class WithAudioTile extends SwitchCameraTile {
     public WithAudioTile(@NonNull Context context, TileListener listener) {
         super(context, listener);
         this.iconRes = R.drawable.ic_mic_black_24dp;

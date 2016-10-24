@@ -7,7 +7,7 @@ import dev.nick.app.screencast.R;
 import dev.nick.tiles.tile.DateTileView;
 import dev.nick.tiles.tile.TileListener;
 
-public class DataTimeTile extends HeadlessTile {
+public class DataTimeTile extends SwitchCameraTile {
     public DataTimeTile(@NonNull Context context, TileListener listener) {
         super(context, listener);
         this.iconRes = R.drawable.ic_share;

@@ -15,6 +15,7 @@
 -->
 <resources>
     <string name="app_name">Screen Recorder</string>
+    <string name="title_settings">Settings</string>
     <string name="share">Share</string>
     <string name="stop">Stop</string>
     <string name="insufficient_storage">Insufficient storage</string>
@@ -28,4 +29,10 @@
     <string name="stop_description">Tap to stop recording</string>
     <string name="with_audio">Include audio from microphone</string>
     <string name="no_audio_setting_warning">To include audio, <b>tap here to go to Settings and enable the microphone permission for this app</b></string>
+    <string name="preview_size_s">Small</string>
+    <string name="preview_size_n">Normal</string>
+    <string name="preview_size_l">Large</string>
+    <string name="category_audio">Audio</string>
+    <string name="category_video">Video</string>
+    <string name="category_camera">Camera</string>
 </resources>

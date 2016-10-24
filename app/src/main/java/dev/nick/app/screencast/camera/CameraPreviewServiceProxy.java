@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import dev.nick.app.screencast.ServiceProxy;
+import dev.nick.logger.LoggerManager;
 
 public class CameraPreviewServiceProxy extends ServiceProxy implements ICameraPreviewService {
 
@@ -16,30 +17,29 @@ public class CameraPreviewServiceProxy extends ServiceProxy implements ICameraPr
         context.startService(new Intent(context, CameraPreviewService.class));
     }
 
-    public static void show(final Context context) {
-        ThreadUtil.getMainThreadHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                new CameraPreviewServiceProxy(context).show();
-            }
-        });
+    public static void show(final Context context, final int size) {
+        new CameraPreviewServiceProxy(context).show(size);
     }
 
     public static void hide(final Context context) {
-        ThreadUtil.getMainThreadHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                new CameraPreviewServiceProxy(context).hide();
-            }
-        });
+        new CameraPreviewServiceProxy(context).hide();
+    }
+
+    public static void setSize(final Context context, final int index) {
+        new CameraPreviewServiceProxy(context).setSize(index);
     }
 
     @Override
-    public void show() {
+    public void show(final int size) {
         setTask(new ProxyTask() {
             @Override
             public void run() throws RemoteException {
-                mService.show();
+                mService.show(size);
+            }
+
+            @Override
+            public boolean forUI() {
+                return true;
             }
         });
     }
@@ -50,6 +50,31 @@ public class CameraPreviewServiceProxy extends ServiceProxy implements ICameraPr
             @Override
             public void run() throws RemoteException {
                 mService.hide();
+            }
+
+            @Override
+            public boolean forUI() {
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public boolean isShowing() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSize(final int index) {
+        setTask(new ProxyTask() {
+            @Override
+            public void run() throws RemoteException {
+                mService.setSize(index);
+            }
+
+            @Override
+            public boolean forUI() {
+                return true;
             }
         });
     }

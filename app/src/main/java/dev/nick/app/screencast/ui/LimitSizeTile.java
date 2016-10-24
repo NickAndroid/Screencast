@@ -7,7 +7,7 @@ import dev.nick.app.screencast.R;
 import dev.nick.tiles.tile.EditTextTileView;
 import dev.nick.tiles.tile.TileListener;
 
-public class LimitSizeTile extends HeadlessTile {
+public class LimitSizeTile extends SwitchCameraTile {
     public LimitSizeTile(@NonNull Context context, TileListener listener) {
         super(context, listener);
         this.iconRes = R.drawable.ic_storage_black_24dp;

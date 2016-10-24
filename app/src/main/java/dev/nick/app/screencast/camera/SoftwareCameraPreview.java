@@ -19,6 +19,7 @@ package dev.nick.app.screencast.camera;
 import android.content.Context;
 import android.hardware.Camera;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -61,7 +62,7 @@ public class SoftwareCameraPreview extends SurfaceView implements CameraPreview.
 
 
     @Override
-    protected void onVisibilityChanged(final View changedView, final int visibility) {
+    protected void onVisibilityChanged(@NonNull final View changedView, final int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         mPreview.onVisibilityChanged(visibility);
     }

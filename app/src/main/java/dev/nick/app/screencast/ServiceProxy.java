@@ -144,8 +144,12 @@ public abstract class ServiceProxy {
         }
     }
 
-    protected interface ProxyTask {
-        public void run() throws RemoteException;
+    protected abstract class ProxyTask {
+        public abstract void run() throws RemoteException;
+
+        public boolean forUI() {
+            return false;
+        }
     }
 
     private class ProxyConnection implements ServiceConnection {
@@ -160,40 +164,48 @@ public abstract class ServiceProxy {
             onConnected(binder);
 
             // Do our work in another thread.
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    try {
-                        mTask.run();
-                    } catch (RemoteException e) {
-                        mLogger.debug("RemoteException thrown running mTask!");
-                    } finally {
-                        // Make sure that we unbind the mConnection even on exceptions in the
-                        // task provided by the subclass.
-                        try {
-                            // Each ServiceProxy handles just one task, so we unbind after we're
-                            // done with our work.
-                            mContext.unbindService(mConnection);
-                        } catch (RuntimeException e) {
-                            // The exceptions that are thrown here look like IllegalStateException,
-                            // IllegalArgumentException and RuntimeException. Catching
-                            // RuntimeException which get them all. Reasons for these exceptions
-                            // include services that have already been stopped or unbound. This can
-                            // happen if the user ended the activity that was using the service.
-                            // This is harmless, but we've got to catch it.
-                            mLogger.debug("RuntimeException when trying to unbind from service");
-                        }
+            if (mTask.forUI()) {
+                call();
+            } else {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        return call();
                     }
-                    mTaskCompleted = true;
-                    synchronized (mConnection) {
-                        if (DEBUG_PROXY) {
-                            mLogger.debug("Task " + mName + " completed; disconnecting");
-                        }
-                        mConnection.notify();
-                    }
-                    return null;
+                }.execute();
+            }
+        }
+
+        private Void call() {
+            try {
+                mTask.run();
+            } catch (RemoteException e) {
+                mLogger.debug("RemoteException thrown running mTask!");
+            } finally {
+                // Make sure that we unbind the mConnection even on exceptions in the
+                // task provided by the subclass.
+                try {
+                    // Each ServiceProxy handles just one task, so we unbind after we're
+                    // done with our work.
+                    mContext.unbindService(mConnection);
+                } catch (RuntimeException e) {
+                    // The exceptions that are thrown here look like IllegalStateException,
+                    // IllegalArgumentException and RuntimeException. Catching
+                    // RuntimeException which get them all. Reasons for these exceptions
+                    // include services that have already been stopped or unbound. This can
+                    // happen if the user ended the activity that was using the service.
+                    // This is harmless, but we've got to catch it.
+                    mLogger.debug("RuntimeException when trying to unbind from service");
                 }
-            }.execute();
+            }
+            mTaskCompleted = true;
+            synchronized (mConnection) {
+                if (DEBUG_PROXY) {
+                    mLogger.debug("Task " + mName + " completed; disconnecting");
+                }
+                mConnection.notify();
+            }
+            return null;
         }
 
         @Override

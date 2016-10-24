@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 
+import dev.nick.app.screencast.provider.SettingsProvider;
+import dev.nick.logger.LoggerManager;
 import safesax.Element;
 import safesax.ElementListener;
 import safesax.Parsers;
@@ -227,6 +229,11 @@ public abstract class EncoderDevice {
                     }
                 }
             }
+            // Scale to match the quality
+            width = (int) (width * SettingsProvider.get().resolutionScaleFactor());
+            height = (int) (height * SettingsProvider.get().resolutionScaleFactor());
+            LoggerManager.getLogger(getClass()).info("Current scaled video size:" + width + "x" + height);
+
             if (!matched) {
                 // No match found. Go for the lowest... :(
                 width = landscape ? 640 : 480;
